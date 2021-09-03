@@ -87,7 +87,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
-
     double auto_y_value;
  
     double tv = table.getEntry("tv").getDouble(0.0);
@@ -109,6 +108,6 @@ public class Robot extends TimedRobot {
       auto_y_value = .1;
     }
 
-    m_robotDrive.driveCartesian((tx * .01), teauto_y_valuemp, 0, 0.0);
+    m_robotDrive.driveCartesian((tx * .01), auto_y_value, 0, 0.0);
   }
 }

@@ -4,14 +4,10 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.CAN;
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Sendable;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
@@ -40,9 +36,6 @@ public class Robot extends TimedRobot {
     private static final int frontRightDeviceID = 1;
     private static final int rearRightDeviceID = 2;
 
-    private static final int leftLauncherDeviceID = 5;
-    private static final int rightLauncherDeviceID = 6;
-
     private static final int kJoystickChannel = 0;
 
     private MecanumDrive m_robotDrive;
@@ -56,37 +49,16 @@ public class Robot extends TimedRobot {
     private double lYTimerMs = 0;
     private double rXTimerMs = 0;
 
-    CANSparkMax frontLeft;
-    CANSparkMax rearLeft;
-    CANSparkMax frontRight;
-    CANSparkMax rearRight;
-
-    CANSparkMax leftLauncher;
-    CANSparkMax rightLauncher;
-
-    Compressor compressor;
-
-    DoubleSolenoid solenoid;
-
     private int rampUpMs = 3000;
 
     @Override
     public void robotInit() {
         table = NetworkTableInstance.getDefault().getTable("limelight");
 
-        compressor = new Compressor(0);
-
-        // boolean enabled = compressor.enabled();
-
-        solenoid = new DoubleSolenoid(0, 1);
-
-        frontLeft = new CANSparkMax(frontLeftDeviceID, MotorType.kBrushless);
-        rearLeft = new CANSparkMax(rearLeftDeviceID, MotorType.kBrushless);
-        frontRight = new CANSparkMax(frontRightDeviceID, MotorType.kBrushless);
-        rearRight = new CANSparkMax(rearRightDeviceID, MotorType.kBrushless);
-
-        leftLauncher = new CANSparkMax(leftLauncherDeviceID, MotorType.kBrushless);
-        rightLauncher = new CANSparkMax(rightLauncherDeviceID, MotorType.kBrushless);
+        CANSparkMax frontLeft = new CANSparkMax(frontLeftDeviceID, MotorType.kBrushless);
+        CANSparkMax rearLeft = new CANSparkMax(rearLeftDeviceID, MotorType.kBrushless);
+        CANSparkMax frontRight = new CANSparkMax(frontRightDeviceID, MotorType.kBrushless);
+        CANSparkMax rearRight = new CANSparkMax(rearRightDeviceID, MotorType.kBrushless);
 
         m_robotDrive = new MecanumDrive(frontLeft, rearLeft, frontRight, rearRight);
 
@@ -112,6 +84,7 @@ public class Robot extends TimedRobot {
 
         double l_stick_x = m_controller.getX(Hand.kLeft);
         double l_stick_y = m_controller.getY(Hand.kLeft);
+
         double r_stick_x = m_controller.getX(Hand.kRight);
 
         double speedMultiplier = speedSlider.getDouble(0);
@@ -147,60 +120,7 @@ public class Robot extends TimedRobot {
             r_x_value = r_stick_x * speedMultiplier * (rXTimerMs / rampUpMs);
         }
 
-        // frontLeft.set(l_x_value * -1);
-        // rearLeft.set(l_x_value);
-
         m_robotDrive.driveCartesian(l_x_value, (-1 * l_y_value), r_x_value, 0.0);
-
-        boolean pressureSwitch = compressor.getPressureSwitchValue();
-        double current = compressor.getCompressorCurrent();
-
-        System.out.println("pressureSwitch: " + pressureSwitch);
-        System.out.println("current: " + current);
-
-        boolean a_pressed = m_controller.getAButtonPressed();
-        boolean b_pressed = m_controller.getBButtonPressed();
-        boolean x_pressed = m_controller.getXButtonPressed();
-
-        if (a_pressed) {
-            solenoid.set(Value.kOff);
-        }
-        /*
-         * if (b_pressed) { solenoid.set(Value.kForward); }
-         */
-        if (x_pressed) {
-            solenoid.set(Value.kReverse);
-        }
-
-        double r_trigger = m_controller.getTriggerAxis(Hand.kRight);
-        double l_trigger = m_controller.getTriggerAxis(Hand.kLeft);
-
-        double launcherValue = 0;
-
-        if (r_trigger > 0 && l_trigger == 0) {
-            launcherValue = r_trigger;
-        }
-
-        if (l_trigger > 0 && r_trigger == 0) {
-            launcherValue = l_trigger * -1 * .25;
-        }
-
-        leftLauncher.set(launcherValue * -1);
-        rightLauncher.set(launcherValue);
-
-        double tv = table.getEntry("tv").getDouble(0.0);
-
-        double tx = table.getEntry("tx").getDouble(0.0);
-
-        double ty = table.getEntry("ty").getDouble(0.0);
-
-        double ta = table.getEntry("ta").getDouble(0.0);
-
-        double tl = table.getEntry("tl").getDouble(0.0);
-
-        if ((tx > -1 && tx < 1 && launcherValue == 1 && tv == 1) || (b_pressed && launcherValue == 1)) {
-            solenoid.set(Value.kForward);
-        }
     }
 
     /**

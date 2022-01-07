@@ -1,3 +1,3 @@
-# 2021-MecanumDrive
+# FRC-Java-Test
 
-2021 - 22 mecanum drive repository
+FRC robotics java mecanum drive template for testing.
